@@ -83,7 +83,8 @@ def optionThree(cont):
 
 
 def optionFour(cont, initialStation):
-    controller.minimumCostPaths(cont, initialStation)
+    answer = controller.minimumCostPaths(cont, initialStation)
+    print("Tiempo [ms]: ", f"{answer[1]:.3f}")
 
 
 def optionFive(cont, destStation):

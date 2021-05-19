@@ -24,9 +24,12 @@
  *
  """
 
+import time
+import tracemalloc
 import config as cf
 from App import model
 import csv
+from datetime import datetime
 
 """
 El controlador se encarga de mediar entre la vista y el modelo.
@@ -35,6 +38,38 @@ el modelo varias veces o integrar varias de las respuestas
 del modelo en una sola respuesta.  Esta responsabilidad
 recae sobre el controlador.
 """
+
+# Funciones para calcular el tiempo
+
+def getTime():
+    """
+    devuelve el instante tiempo de procesamiento en milisegundos
+    """
+    return float(time.perf_counter()*1000)
+
+
+def getMemory():
+    """
+    toma una muestra de la memoria alocada en instante de tiempo
+    """
+    return tracemalloc.take_snapshot()
+
+
+def deltaMemory(start_memory, stop_memory):
+    """
+    calcula la diferencia en memoria alocada del programa entre dos
+    instantes de tiempo y devuelve el resultado en kBytes (ej.: 2100.0 kB)
+    """
+    memory_diff = stop_memory.compare_to(start_memory, "filename")
+    delta_memory = 0.0
+    # suma de las diferencias en uso de memoria
+    for stat in memory_diff:
+        delta_memory = delta_memory + stat.size_diff
+    # de Byte -> kByte
+    delta_memory = delta_memory/1024.0
+    return delta_memory
+
+
 
 # ___________________________________________________
 #  Inicializacion del catalogo
@@ -111,7 +146,18 @@ def minimumCostPaths(analyzer, initialStation):
     Calcula todos los caminos de costo minimo de initialStation a todas
     las otras estaciones del sistema
     """
-    return model.minimumCostPaths(analyzer, initialStation)
+    delta_time = -1.0
+    tracemalloc.start()
+    start_time = getTime()
+
+    datos = model.minimumCostPaths(analyzer, initialStation)
+
+    stop_time = getTime()
+    tracemalloc.stop()
+
+    delta_time = stop_time - start_time
+
+    return datos, delta_time
 
 
 def hasPath(analyzer, destStation):
